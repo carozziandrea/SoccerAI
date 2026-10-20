@@ -4,13 +4,9 @@ from html import escape
 from pathlib import Path
 
 import streamlit as st
-from langchain_classic.chains import create_sql_query_chain
-from langchain_community.llms import Ollama
-from langchain_community.utilities import SQLDatabase
-from langchain_core.prompts import PromptTemplate
-
+from ai_query import crea_llm_locale, crea_sistema_sql
 from query_templates import query_predefinita, riepilogo_copertura, stagione_non_coperta
-from query_utils import crea_engine_sqlite, genera_ed_esegui_query
+from query_utils import genera_ed_esegui_query
 from risposte import formula_risposta
 
 
@@ -166,24 +162,7 @@ def crea_uri_sqlalchemy(db_path: Path) -> str:
 
 @st.cache_resource
 def inizializza_sistema(db_uri: str):
-    db = SQLDatabase(crea_engine_sqlite(db_uri))
-    llm = Ollama(model="llama3", temperature=0)
-
-    prompt_puro = (
-        "Sei un esperto SQL. Data una domanda, restituisci ESCLUSIVAMENTE una query SQLite di sola lettura. "
-        "Non aggiungere spiegazioni o Markdown. Genera una sola istruzione SQL.\n"
-        "Limita i risultati a massimo {top_k} righe quando ha senso.\n\n"
-        "Schema del database:\n{table_info}\n\n"
-        "Regole del database: stagione è una colonna di partite, non di marcatori. Per filtrare per stagione "
-        "o giornata collega marcatori a partite con marcatori.id_partita = partite.id_partita. Le stagioni "
-        "sono memorizzate come YYYY/YYYY, anche quando l'utente scrive 2025/26. Usa normalizza() per i nomi. "
-        "Per il giocatore collega marcatori.id_giocatore a giocatori.id_giocatore; usa alias_calciatori "
-        "per i nomi alternativi ed EXISTS per evitare doppioni. Per contare i gol includi Goal%, "
-        "Penalty - Scored, ma escludi Own Goal. Usa solo SELECT.\n\n"
-        "Domanda: {input}\nSQL Query:"
-    )
-    prompt = PromptTemplate.from_template(prompt_puro)
-    return create_sql_query_chain(llm, db, prompt=prompt), llm
+    return crea_sistema_sql(db_uri)
 
 
 if not DB_PATH.is_file():
@@ -257,7 +236,7 @@ if inviata and domanda.strip():
             if query_fissa:
                 query_sql = query_fissa.sql
                 df_risultati = query_fissa.risultati
-                llm = Ollama(model="llama3", temperature=0)
+                llm = crea_llm_locale()
             else:
                 sql_chain, llm = inizializza_sistema(crea_uri_sqlalchemy(DB_PATH))
                 query_sql, df_risultati = genera_ed_esegui_query(sql_chain, domanda, DB_PATH)
