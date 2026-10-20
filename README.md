@@ -1,5 +1,7 @@
 # SoccerAI
 
+![SoccerAI interface showing a natural-language question and its database-backed answer](assets/soccerai.png)
+
 ## ENG
 
 SoccerAI is a local AI assistant for exploring a Serie A goal archive. Ask football statistics questions in Italian and inspect the SQL and rows behind each answer. It runs Llama 3 locally through Ollama: for open-ended questions, the model translates natural language into read-only SQLite and summarizes the returned data in Italian. No question or database result is sent to a hosted language-model API.
