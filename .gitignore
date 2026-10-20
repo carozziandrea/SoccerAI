@@ -1,0 +1,24 @@
+# Local data, credentials, caches, and generated files.
+__pycache__/
+*.py[cod]
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.sqlite-*
+.cache/
+.venv/
+build/
+dist/
+wheels/
+*.egg-info/
+*.log
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+PRODUCT.md
