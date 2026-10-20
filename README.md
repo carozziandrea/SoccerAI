@@ -2,11 +2,14 @@
 
 ## ENG
 
-SoccerAI is a local Serie A goal archive. Ask football statistics questions in Italian and inspect the SQL and rows behind each answer. Common questions use deterministic, parameterized templates; less common questions can use a local language model to generate SQLite queries.
+SoccerAI is a local AI assistant for exploring a Serie A goal archive. Ask football statistics questions in Italian and inspect the SQL and rows behind each answer. It runs Llama 3 locally through Ollama: for open-ended questions, the model translates natural language into read-only SQLite and summarizes the returned data in Italian. No question or database result is sent to a hosted language-model API.
+
+Frequently asked statistics, such as player totals and scorer rankings, use deterministic, parameterized SQL templates to keep those answers predictable. The local model handles questions outside those templates and can also explain tabular results.
 
 ### Highlights
 
 - **Auditable answers:** the interface displays the SQL query and database rows behind a response.
+- **Local AI inference:** LangChain connects the app to Llama 3 running on your machine with Ollama; prompts and query results stay in this local workflow.
 - **Read-only execution:** SQLite denies write operations, and invalid generated queries can be retried using database errors as feedback.
 - **Reliable common queries:** templates cover player goal totals, first Serie A goal, scorer rankings, and team totals.
 - **Robust player lookup:** normalization handles accents, case, punctuation, and selected transliterations; IDs and aliases resolve names such as “Yildiz”.
@@ -40,7 +43,14 @@ ollama pull llama3
 uv run streamlit run app.py
 ```
 
-The app opens in your browser. Common questions use tested SQL templates; other questions use the local model to generate a read-only SQLite query. No account or API key is needed for local operation. Template-based questions can still work when the model service is unavailable.
+The app opens in your browser. For open-ended questions, LangChain sends the question to your local Llama 3 model, which generates a read-only SQLite query; the SQL results are then used to compose an Italian answer. Common questions use tested SQL templates instead, so key statistics do not depend on model-generated SQL. Inference does not use a cloud AI API and needs no account or API key. Importing football data is a separate step that does require internet access. Template-based queries can still return database results when Ollama is unavailable.
+
+### How the local AI answers a question
+
+1. You enter a question in Italian.
+2. SoccerAI matches common statistical requests to a parameterized SQL template. If no template applies, Llama 3 interprets the question and generates a SQLite `SELECT` query.
+3. SQLite executes the query in read-only mode, and the app displays the SQL and returned rows for inspection.
+4. Simple counts and first-goal results are formatted directly from the data. For other result tables, the local model writes a short Italian summary grounded in those rows.
 
 Example questions:
 
@@ -73,11 +83,14 @@ SoccerAI is an experimental proof of concept for a portfolio, not a production s
 
 ## ITA
 
-SoccerAI è un archivio locale dei gol della Serie A. Permette di fare domande statistiche in italiano e controllare la query SQL e le righe alla base di ogni risposta. Le domande comuni usano template deterministici e parametrizzati; per le altre, un modello locale può generare query SQLite.
+SoccerAI è un assistente con AI locale per esplorare un archivio dei gol della Serie A. Puoi fare domande statistiche in italiano e controllare query SQL e dati alla base delle risposte. L'app esegue Llama 3 sul tuo computer tramite Ollama: per le domande aperte, il modello traduce il linguaggio naturale in query SQLite di sola lettura e riassume i risultati in italiano. Domande e risultati non vengono inviati a un'API di modelli ospitata nel cloud.
+
+Le statistiche richieste più spesso, come i totali dei giocatori e le classifiche marcatori, usano template SQL deterministici e parametrizzati, così da mantenere prevedibili queste risposte. Il modello locale gestisce le domande che non rientrano nei template e può anche spiegare tabelle di risultati.
 
 ### Punti di forza
 
 - **Risposte verificabili:** l'interfaccia mostra la query SQL e i dati alla base della risposta.
+- **AI eseguita in locale:** LangChain collega l'app a Llama 3 sul tuo computer tramite Ollama; prompt e risultati restano in questo flusso locale.
 - **Esecuzione in sola lettura:** SQLite blocca le scritture e le query generate non valide possono essere corrette usando gli errori del database.
 - **Domande comuni affidabili:** i template coprono totali per calciatore, prima rete in Serie A, classifiche marcatori e gol per squadra.
 - **Ricerca robusta dei giocatori:** la normalizzazione gestisce accenti, maiuscole, punteggiatura e alcune traslitterazioni; ID e alias aiutano a riconoscere nomi come “Yildiz”.
@@ -111,7 +124,14 @@ ollama pull llama3
 uv run streamlit run app.py
 ```
 
-L'app si apre nel browser. Le domande comuni usano template SQL verificati; per le altre il modello locale genera query SQLite di sola lettura. Per l'esecuzione locale non servono account o chiavi API. Le query basate su template possono funzionare anche se Ollama non è disponibile.
+L'app si apre nel browser. Per le domande aperte, LangChain passa la richiesta al modello Llama 3 locale, che genera una query SQLite di sola lettura; i risultati SQL vengono poi usati per comporre una risposta in italiano. Le domande comuni usano invece template SQL verificati, così le statistiche principali non dipendono da SQL generato dal modello. L'inferenza non usa API AI cloud e non richiede account o chiavi API. L'importazione dei dati calcistici è un passaggio separato che richiede internet. I template possono comunque restituire i dati del database quando Ollama non è disponibile.
+
+### Come risponde l'AI locale
+
+1. Scrivi una domanda in italiano.
+2. SoccerAI riconosce le richieste statistiche frequenti e seleziona un template SQL parametrizzato. Se non trova un template adatto, Llama 3 interpreta la domanda e genera una query SQLite `SELECT`.
+3. SQLite esegue la query in sola lettura; l'app mostra SQL e righe restituite per permetterti di controllarle.
+4. Conteggi semplici e risposte sulla prima rete vengono formattati direttamente dai dati. Per le altre tabelle, il modello locale scrive un breve riepilogo in italiano basato sui risultati.
 
 Esempi:
 
